@@ -27,24 +27,52 @@ exports.checkBody = (req, res, next) => {
   next();
 };
 
-exports.getAllTours = (req, res) => {
-  console.log(req.requestTime);
+exports.getAllTours = async (req, res) => {
+  try {
+    // BUILD QUERY
+    // 1A) Filtering
+    const queryObj = { ...req.query };
+    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+    excludedFields.forEach(el => delete queryObj[el]);
 
-  res.status(200).json({
-    status: 'success',
-    requestedAt: req.requestTime,
-    results: Tour.length,
-    data: {
-      Tour
+    // 1B) Advanced filtering
+    let queryStr = JSON.stringify(queryObj);
+    queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+
+    let query = Tour.find(JSON.parse(queryStr));
+
+    // Sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ');
+      query = query.sort(sortBy);
+    } else {
+      req.query.sort('-createdAt');
     }
-  });
+
+    // Execute query
+    const tours = await query;
+
+    res.status(200).json({
+      status: 'success',
+      requestedAt: req.requestTime,
+      results: tours.length,
+      data: {
+        tours
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-exports.getTour = (req, res) => {
-  console.log(req.params);
-  const id = req.params.id * 1;
+exports.getTour = async (req, res) => {
+  const id = req.params.id;
 
-  const tour = Tour.find(el => el.id === id);
+  const tour = await Tour.find({ _id: id });
+
+  if (!tour) {
+    console.log(`There is no tour with ID of ${id}`);
+  }
 
   res.status(200).json({
     status: 'success',
