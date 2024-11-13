@@ -40,6 +40,9 @@ app.use(cors());
 app.options('*', cors());
 // app.options('/api/v1/tours/:id', cors());
 
+// Logger
+app.use(morgan('dev'));
+
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -58,6 +61,13 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, please try again in an hour!'
 });
 app.use('/api', limiter);
+
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: 'Natours API!'
+  });
+});
 
 // Stripe webhook, BEFORE body-parser, because stripe needs the body as stream
 app.post(
