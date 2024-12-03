@@ -62,12 +62,12 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    data: 'Natours API!'
-  });
-});
+// app.get('/', (req, res) => {
+//   res.status(200).json({
+//     success: true,
+//     data: 'Natours API!'
+//   });
+// });
 
 // Stripe webhook, BEFORE body-parser, because stripe needs the body as stream
 app.post(
