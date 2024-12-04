@@ -1,3 +1,4 @@
+require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Tour = require('../models/tourModel');
 const User = require('../models/userModel');
@@ -8,7 +9,13 @@ const factory = require('./handlerFactory');
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   // 1) Get the currently booked tour
   const tour = await Tour.findById(req.params.tourId);
-  // console.log(tour);
+
+  if (!tour) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'No tour found with this ID'
+    });
+  }
 
   // 2) Create checkout session
   const session = await stripe.checkout.sessions.create({

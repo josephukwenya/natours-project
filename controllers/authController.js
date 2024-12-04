@@ -37,15 +37,23 @@ const createSendToken = (user, statusCode, req, res) => {
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
+  const { name, email, password, passwordConfirm } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (user) {
+    return next(new AppError('User already exists!', 400));
+  }
+
   const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm
+    name,
+    email,
+    password,
+    passwordConfirm
   });
 
   const url = `${req.protocol}://${req.get('host')}/me`;
-  // console.log(url);
+  console.log(url);
   await new Email(newUser, url).sendWelcome();
 
   createSendToken(newUser, 201, req, res);
